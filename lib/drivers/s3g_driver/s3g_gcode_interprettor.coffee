@@ -4,7 +4,7 @@ toolPayloadSizes = require('./s3g_payload_sizes').toolPayloadSizes
 BitMask = require('bit-mask')
 
 # Builds a payload buffer for a host query or action
-# nBytes: the number of bytes to add for variable sized packets like 
+# nBytes: the number of bytes to add for variable sized packets like
 #         setting EEPROM values.
 payloadBuilder = (s3gCmdByte, size = payloadSizes[s3gCmdByte], nBytes = 0) ->
   size ?= 1
@@ -40,6 +40,7 @@ gcodeRegex = /([a-z])([\-0-9\.]+)/g
 
 
 module.exports = parse: (gcode, state) ->
+  console.log "gcode?"
   console.log gcode
   gcode = gcode.toLowerCase().replace(/\s/g, '')
   matches = gcode.match gcodeRegex
@@ -61,10 +62,9 @@ module.exports = parse: (gcode, state) ->
       for i, k of "xyzab"
         axis = state.axes[k]
         # console.log axis
-        steps =  (attrs[k]||0) * axis.stepsPerMM
-        steps = Math.round(steps * state.unitsMultiplier * axis.microstepping)
+        steps =  (attrs[k]||0) * (axis.stepsPerMM||1)
+        steps = Math.round(steps * (state.unitsMultiplier||1) * (axis.microstepping||1))
         distance += Math.pow steps, 2
-        # console.log steps
         b.addInt32 steps
       distance = Math.sqrt distance
       # Durration in microseconds

@@ -25,8 +25,7 @@ module.exports = class AbstractSerialDriver extends EventEmitter
   waitForHeaders: true
   pollingInterval: 700
 
-  constructor: (opts = {}, SP = SerialPort) ->
-    @opts = Object.merge (@_defaultOpts||{}), opts
+  constructor: (@opts = {}, SP = SerialPort) ->
     @verbose ||= @opts.verbose
     @_comName = @opts.port.comName
     @_baudrate = @opts.driver.baudrate || @opts.baudrate

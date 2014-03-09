@@ -15,7 +15,9 @@ module.exports = class Config extends EventEmitter
   _defaults: ->
     # These properties we will have to reload the server for.
     name: "Printer ##{@port.serialNumber}"
-    driver: "serial_gcode"
+    driver:
+      type: "serial_gcode"
+      baudrate: 115200
     polling: true
     # These properties we can outright ignore because they don't have any state.
     verbose: false

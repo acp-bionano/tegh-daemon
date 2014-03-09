@@ -7,13 +7,11 @@ responseSizes = require './s3g_response_sizes'
 
 module.exports = class S3GDriver extends AbstractSerialDriver
 
-  _defaultOpts: {port: null, baudrate: 115200, polling: true}
   _serialParser: serialport.parsers.raw
   _retryableResponseCodes: [0x80, 0x83, 0x88, 0x89, 0x8C]
   waitForHeaders: false
 
   _sendS3G: (payload) ->
-    # console.log payload
     payload = new Buffer(payload) unless Buffer.isBuffer(payload)
     @_previousLine = payload
     packet = PacketBuilder.build payload
@@ -45,13 +43,15 @@ module.exports = class S3GDriver extends AbstractSerialDriver
     @sendNow([payload], false)
 
   _onOpen: =>
-    console.log "opened!"
+    console.log "opened!" if @verbose
     @reset()
 
   reset: =>
     @_printJob = null
     @_printJobLine = 0
     @_headersReceived = false
+    @_response = null
+    @_previousLine = null
 
     @_state = @opts.driver
     @_state.feedrate = 300
@@ -78,7 +78,22 @@ module.exports = class S3GDriver extends AbstractSerialDriver
       @_response = data
     return unless @_response.length > 2
 
+    if @_response.readUInt8(0) != 0xD5
+      if @verbose
+        console.log "Error: invalid packet. Resetting."
+        console.log @_response
+      @reset()
+      return
+
     code = @_response.readUInt8(2)
+
+    unless @_previousLine?
+      if @verbose
+        console.log "Error: response but nothing was sent. Resetting."
+        console.log @_response
+      @reset()
+      return
+
     cmd = @_previousLine.readUInt8(0)
 
     # Retry on error response
@@ -94,7 +109,7 @@ module.exports = class S3GDriver extends AbstractSerialDriver
     return if size + 4 > @_response.length
 
     if cmd == 10
-      toolheadId = @_previousLine.readUInt8(1) 
+      toolheadId = @_previousLine.readUInt8(1)
       toolheadCmd = @_previousLine.readUInt8(2)
     # console.log "expected: #{size + 4}"
     # console.log "actual: #{@_response.length}"
@@ -110,7 +125,7 @@ module.exports = class S3GDriver extends AbstractSerialDriver
     @_emitReceiveEvents(cmd, toolheadCmd, toolheadId, payload)
 
     # Verbose output
-    if @verbose
+    if true #@verbose
       console.log "\n-----------------------------------"
       console.log "Received     code: #{code.toString(16)}"
       console.log "data:"
@@ -139,7 +154,7 @@ module.exports = class S3GDriver extends AbstractSerialDriver
     @kill()
 
   _poll: =>
-    console.log "polling" if @verbose
+    console.log "polling" #if @verbose
     @_lastPoll = Date.now()
     @sendS3G([10, 0, 2])
 
