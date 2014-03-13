@@ -205,7 +205,7 @@ module.exports = class Printer extends EventEmitter
   _heaterGCode: (key) -> switch key
     when 'b' then "M140"
     when 'e0' then "M104"
-    else "M104 P#{k[1..]}"
+    else "M104 P#{key[1..]}"
 
   _compGCode: (key, comp, diff) -> switch comp.type || key
     when "conveyor"

@@ -10,7 +10,8 @@ module.exports = class ChildProcessDriverParent extends EventEmitter
     'print',
     'isPrinting',
     'isClearToSend',
-    'startPolling'
+    'startPolling',
+    'print_job_line_sent'
   ]
 
   constructor: (@_opts) ->
