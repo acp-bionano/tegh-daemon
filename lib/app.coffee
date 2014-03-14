@@ -32,6 +32,11 @@ module.exports = class App
     @app = express()
     @server = https.createServer(opts, @app).listen(2540)
     @server.on "listening", cb if cb
+    # CORS
+    @app.all '*', (req, res, next) ->
+      res.header("Access-Control-Allow-Origin", "*")
+      res.header("Access-Control-Allow-Headers", "X-Requested-With")
+      next()
     # Authentication
     @app.use pamAuth(undefined, 'tegh') if @enableAuth
     # Base Routes (ie. routes not specific to individual printers)

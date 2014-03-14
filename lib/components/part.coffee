@@ -16,7 +16,7 @@ module.exports = class Part extends EventEmitter
     #check path fail fast
     ext = path.extname(opts.filePath)
     whitelist = /\.(gcode|ngc|stl|obj)/i
-    throw new Exception "Bad file extension." if !ext.match(whitelist)?
+    throw new Error "Bad file extension." if !ext.match(whitelist)?
     # Setting up the non-enumerable properties
     for k in nonEnumerables
       Object.defineProperty @, k, writable: true, value: undefined
