@@ -121,7 +121,7 @@ module.exports = class Printer extends EventEmitter
   rm: (key) => @$.$apply (data) =>
     comp = data[key]
     throw "part/assembly does not exist" if ['part', 'assembly'].none comp?.type
-    for subcomponent in comp.components
+    for subcomponent in comp.components()
       subcomponent.beforeDelete()
       delete data[subcomponent.key] if data[subcomponent.key]?
 
