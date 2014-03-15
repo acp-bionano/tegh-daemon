@@ -16,8 +16,10 @@ describe 'Printer', ->
   driver = null
   printer = null
   config = null
+  _parts = null
 
   beforeEach ->
+    _parts = []
     driver  = new DriverStub()
     initPrinter()
 
@@ -25,13 +27,13 @@ describe 'Printer', ->
     config = new Config opts
     printer = new Printer driver, config, PartStub
 
-  addPart = (done, opts = {}) ->
+  addPart = (done, opts = {filePath: "test.gcode"}) ->
     printer.once 'add', -> done?()
     opts.filePath = "#{__dirname}/assets/test.gcode"
-    printer.add opts
+    _parts.push printer.add(opts)
 
   partKey = (i=0) ->
-    _.pluck(printer.parts, "key").sort()[i]
+    _parts[i].key
 
   set = (key, attrs) ->
     namespaced = {}
@@ -271,8 +273,8 @@ describe 'Printer', ->
         data[partKey(2)].position.should.equal 1
         data[partKey(1)].position.should.equal 2
         done()
-      printer.add {} for i in [0..3]
-      setImmediate -> set partKey(1), {position: 2}
+      addPart() for i in [0..3]
+      setImmediate -> set partKey(1), position: 2
 
     it 'should move a part to position 0 and move all parts down', (done) ->
       printer.on 'change', (data) ->
@@ -282,17 +284,28 @@ describe 'Printer', ->
       addPart() for i in [0..1]
       setImmediate -> set partKey(1), position: 0
 
+    it 'should move a part to the last position and move all parts up', (done) ->
+      printer.on 'change', (data) ->
+        expect(data[partKey(1)]?.position).to.equal 0
+        expect(data[partKey(2)]?.position).to.equal 1
+        expect(data[partKey(0)]?.position).to.equal 2
+        done()
+      addPart() for i in [0..2]
+      setImmediate -> set partKey(0), position: 2
+
     it 'should error if a invalid part id is given', ->
       fn = set.bind undefined, "foobar", qty: 5, position: 0
       fn.should.throw()
 
     it 'should error if a invalid position is given', ->
-      fn = set.bind undefined, partKey(0), position: 1
-      addPart -> fn.should.throw()
+      addPart ->
+        fn = set.bind undefined, partKey(0), position: 1
+        fn.should.throw()
 
     it 'should error if a negative qty is given', ->
-      fn = set.bind undefined, partKey(0), qty: -5
-      addPart -> fn.should.throw()
+      addPart ->
+        fn = set.bind undefined, partKey(0), qty: -5
+        fn.should.throw()
 
   describe "set", ->
     part = undefined

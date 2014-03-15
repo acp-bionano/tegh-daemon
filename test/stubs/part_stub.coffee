@@ -12,7 +12,7 @@ module.exports = class PartStub extends EventEmitter
   constructor: (attrs, cb) ->
     @[k] = v for k, v of @defaults
     @[k] = v for k, v of attrs
-    @key = "part_stub_#{nextID++}"
+    Object.defineProperty @, "key", value: "part_stub_#{nextID++}"
     setImmediate => cb(@)
 
   loadGCode: (opts, cb) -> setImmediate ->

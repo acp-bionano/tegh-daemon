@@ -66,9 +66,10 @@ module.exports = class Printer extends EventEmitter
   _beforePartPositionChange: (k1, k2, _new) ->
     oldComp = @$.data[k1]
     _old = oldComp.position
-    @parts.filter((j) -> j.key != oldComp.key).each (j) ->
-      j.position += 1 if _old > j.position >= _new
-      j.position -= 1 if _old < j.position <= _new
+    _.reject(@parts, key: k1).each (p) ->
+      p.position += 1 if _old > p.position >= _new
+      p.position -= 1 if _old < p.position <= _new
+
 
   _onReady: =>
     @$.$merge state: {status: 'idle'}, false
