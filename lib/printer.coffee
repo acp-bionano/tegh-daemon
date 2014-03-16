@@ -125,6 +125,8 @@ module.exports = class Printer extends EventEmitter
     for subcomponent in comp.components()
       subcomponent.beforeDelete()
       delete data[subcomponent.key] if data[subcomponent.key]?
+    # Reflowing positions so that there aren't any gaps where parts were deleted
+    part.position = i for part, i in @parts
 
   estop: => @$.$apply (data) =>
     @driver.reset()
