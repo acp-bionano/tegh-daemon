@@ -247,7 +247,8 @@ module.exports = class Printer extends EventEmitter
     if @currentPart.needsSlicing?
       @currentPart.status = @$.buffer.state.status = "slicing"
     # Loading the gcode
-    slicerOpts = @config.printQualities.options[@currentPart.quality]
+    slicerOpts = _.clone @config.printQualities.options[@currentPart.quality]
+    slicerOpts.configPath = "/etc/tegh/slicing_profiles" if slicerOpts?
     @currentPart.loadGCode slicerOpts, @_onReadyToPrint.fill(@currentPart)
 
   _onReadyToPrint: (part, err, gcode) => @$.$apply (data) =>

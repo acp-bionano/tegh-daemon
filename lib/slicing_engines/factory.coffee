@@ -7,8 +7,6 @@ class Factory
 
   # opts = {engine: "", profile: ""}
   constructor: (@opts) ->
-    # No need to recalculate these values after the first time.
-    @[k] = _.memoize @[k] for k in ['engineName', 'enginePath', 'configPath']
     # Requiring the Slicing Engine (but not instantiating it)
     @Engine = require path.join @srcPath(), @engineName()
 
@@ -35,7 +33,7 @@ class Factory
     installer.run _.partial(@Engine.install, @opts), cb
 
   # Slice
-  slice = (filePath) -> @install =>
+  slice: (filePath) =>
     slicer = new @Engine @opts, filePath
     slicer.slice()
     console.log "Slicing #{filePath}"
@@ -45,5 +43,5 @@ module.exports = {
   slice: (opts, filePath) -> new Factory(opts).slice(filePath),
   install: (opts, cb) -> new Factory(opts).install(cb),
   configPath: "~/.tegh",
-  srcPath: path.resolve path.join __dirname, "slicing_engines"
+  srcPath: path.resolve path.join __dirname
 }

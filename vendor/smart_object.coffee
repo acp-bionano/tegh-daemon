@@ -18,7 +18,9 @@ module.exports = class SmartObject extends EventEmitter
     @_mergeRecursion @data, diff
 
   $apply: (cb) =>
-    throw "Cannot recursively $apply" if @_insideApply
+    # Ignore recursive $apply calls
+    return cb @buffer if @_insideApply
+    # throw "Cannot recursively $apply" if @_insideApply
     @_insideApply = true
     try
       cb @buffer
