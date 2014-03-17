@@ -193,7 +193,7 @@ module.exports = class Printer extends EventEmitter
   _beforePartAttrSet: (comp, k1, k2, v) =>
     if k2 == 'position' and @_isBadPartPosition comp, k1, k2, v
       throw "Invalid position."
-    if k2 == 'quality' and !(@config.printQualities.options.hasOwnProperty k2)
+    if k2 == 'quality' and !(_.contains @data.printQualities.options, v)
       throw "Invalid print quality"
     if k2 == 'quality' and comp.needsSlicing() == false
       throw "Cannot set slicing quality for gcode files"
