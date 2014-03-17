@@ -1,4 +1,5 @@
 EventEmitter = require('events').EventEmitter
+_ = require('lodash')
 
 module.exports = class SmartObject extends EventEmitter
   constructor: (buffer) ->
@@ -40,7 +41,7 @@ module.exports = class SmartObject extends EventEmitter
     for k, v of source
       continue if v instanceof Function
       # Nested Object
-      if typeof v == "object"
+      if typeof v == "object" and !(_.isArray(v))
         @_diff (target[k] || {}), v, subDiff = {}
         diff[k] = subDiff if Object.keys(subDiff).length > 0
       # Added Attribute or Changed Attribute
@@ -60,8 +61,10 @@ module.exports = class SmartObject extends EventEmitter
       @emit "beforeMerge", diff
       # Create an updated diff by once again comparing the data and the buffer
       @_diff @data, @buffer, diff = {}
+      # console.log diff
 
     [changes, add, rm] = @_mergeRecursion @data, diff
+    # console.log @data
 
     @emit "change", changes if Object.keys(changes).length > 0
     @emit.fill("add").apply @, args for args in add
@@ -71,7 +74,7 @@ module.exports = class SmartObject extends EventEmitter
     for k, v of diff
       continue if v instanceof Function
       # Add
-      if !(target[k]?) and typeof(v) == "object"
+      if !(target[k]?) and typeof(v) == "object" and !(_.isArray(v))
         v = @_withoutFns v
         add.push [k, v, target]
         target[k] = v
@@ -80,17 +83,18 @@ module.exports = class SmartObject extends EventEmitter
         rm.push [k, target]
         delete target[k]
       # Recurse
-      else if typeof(v) == "object"
+      else if typeof(v) == "object" and !(_.isArray(v))
         @_mergeRecursion target[k], v, ( attrs = {} ), add, rm
         changedAttrs[k] = attrs if Object.keys(attrs).length > 0
       # Change
       else
         changedAttrs[k] = v
         target[k] = v
+
     return [changedAttrs, add, rm]
 
   _withoutFns: (source) ->
-    return source unless typeof source == "object"
+    return source unless typeof source == "object" and !(_.isArray(source))
     target = {}
     for k, v of source
       continue if v instanceof Function

@@ -90,7 +90,9 @@ module.exports = class PrinterServer
   onClientConnect: (ws) =>
     ws.on 'message', @onClientMessage.fill(ws)
     ws.on "close", @onClientDisconnect
+    console.log @printer.data
     data = modKeys.underscore @printer.data
+    # console.log data
     uuid = nodeUUID.v4()
     Object.merge data, session: { uuid: uuid }
     @send ws, [{type: 'initialized', data: data}]

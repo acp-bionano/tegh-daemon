@@ -6,6 +6,7 @@ Part = require "./components/part"
 Assembly = require "./components/assembly"
 SmartObject = require "../vendor/smart_object"
 Camera = require "./components/camera"
+PrintQualities = require "./components/print_qualities"
 
 module.exports = class Printer extends EventEmitter
 
@@ -87,7 +88,8 @@ module.exports = class Printer extends EventEmitter
     # Adding new components
     data[k] ?= @_initComponent k, v for k, v of @config.components
     # Updating print qualities
-    data.printQualities = _.cloneDeep @config.printQualities
+    data.printQualities = new PrintQualities _.cloneDeep @config.printQualities
+
     # Adding the extruders to the axes
     @_axes = ['x','y','z'].concat _.keys @extruders
 
