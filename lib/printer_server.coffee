@@ -46,9 +46,10 @@ module.exports = class PrinterServer
   createComponent: (req, res) =>
     uuid = req.query.session_uuid
     form = new formidable.IncomingForm(keepExtensions: true)
+    ws = @_clients[uuid]
     form.on 'error', (e) -> console.log (e)
-    form.on 'progress', @_onUploadProgress.fill(@_clients[uuid]) if uuid?
-    form.parse req, @_onUploadParsed.fill(res)
+    form.on 'progress', @_onUploadProgress.fill(ws) if uuid?
+    form.parse req, @_onUploadParsed.fill(ws, res)
 
   _onUploadProgress: (ws, bytesReceived, bytesExpected) =>
     msg =
@@ -57,12 +58,17 @@ module.exports = class PrinterServer
       data: { uploaded: bytesReceived, total: bytesExpected }
     @send ws, [msg]
 
-  _onUploadParsed: (res, err, fields, files) =>
+  _onUploadParsed: (ws, res, err, fields, files) =>
     return console.log err if err?
-    @printer.add
-      filePath: files.file.path
-      qty: fields.qty || 1
-      fileName: files.file.name
+    try
+      @printer.add
+        filePath: files.file.path
+        qty: fields.qty || 1
+        fileName: files.file.name
+    catch e
+      res.status(500)
+      @_catchActionError(ws, e)
+
     res.end()
 
   broadcast: (data) =>
@@ -84,7 +90,9 @@ module.exports = class PrinterServer
   onClientConnect: (ws) =>
     ws.on 'message', @onClientMessage.fill(ws)
     ws.on "close", @onClientDisconnect
+    console.log @printer.data
     data = modKeys.underscore @printer.data
+    # console.log data
     uuid = nodeUUID.v4()
     Object.merge data, session: { uuid: uuid }
     @send ws, [{type: 'initialized', data: data}]
@@ -115,11 +123,14 @@ module.exports = class PrinterServer
       response = @printer[msg.action.camelize false](msg.data)
       @send ws, [type: 'ack']
     catch e
-      console.log e.stack if e.stack?
-      data = type: 'runtime.sync', message: e.toString()
-      @send ws, [type: 'error', data: modKeys.underscore data]
+      @_catchActionError(ws, e)
     # console.log "client message:"
     # console.log msg
+
+  _catchActionError: (ws, e) =>
+    console.log e.stack if e.stack?
+    data = type: 'runtime.sync', message: e.toString()
+    @send ws, [type: 'error', data: modKeys.underscore data]
 
   onPrinterChange: (changes) =>
     # console.log "printer change:"

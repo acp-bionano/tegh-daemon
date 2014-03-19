@@ -13,8 +13,8 @@ module.exports = class CuraEngine extends EventEmitter
 
   constructor: (@opts) ->
     console.log @opts.slicingProfile
-    ymlFileName = "#{@opts.profile()}_profile.yml"
-    @_configPath = path.join @opts.configPath(), ymlFileName
+    ymlFileName = "#{@opts.profile}_profile.yml"
+    @_configPath = path.join @opts.configPath, ymlFileName
 
   _gcodePath: =>
     "#{@filePath}.gcode"
@@ -54,14 +54,14 @@ module.exports = class CuraEngine extends EventEmitter
 
   _onExit: (code) =>
     if code != 0 and !@_cancelled
-      return @emit "error" new Error "Slicing failed with code:#{code}"
+      return @emit "error", new Error "Slicing failed with code:#{code}"
     # console.log "complete!"
     @gcodePath = @_gcodePath()
     @emit "complete"
 
 CuraEngine.sandboxDir = false
 CuraEngine.isInstalled = (opts, cb) ->
-  fs.exists "#{opts.configPath()}/#{opts.profile()}_profile.yml", cb
+  fs.exists "#{opts.configPath}/#{opts.profile}_profile.yml", cb
 CuraEngine.install = (opts) ->
   @install "cura_engine_defaults.yml"
-  @mv "cura_engine_defaults.yml", "#{opts.profile()}_profile.yml"
+  @mv "cura_engine_defaults.yml", "#{opts.profile}_profile.yml"

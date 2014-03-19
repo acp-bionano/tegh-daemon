@@ -6,6 +6,7 @@ Part = require "./components/part"
 Assembly = require "./components/assembly"
 SmartObject = require "../vendor/smart_object"
 Camera = require "./components/camera"
+PrintQualities = require "./components/print_qualities"
 
 module.exports = class Printer extends EventEmitter
 
@@ -66,9 +67,10 @@ module.exports = class Printer extends EventEmitter
   _beforePartPositionChange: (k1, k2, _new) ->
     oldComp = @$.data[k1]
     _old = oldComp.position
-    @parts.filter((j) -> j.key != oldComp.key).each (j) ->
-      j.position += 1 if _old > j.position >= _new
-      j.position -= 1 if _old < j.position <= _new
+    _.reject(@parts, key: k1).each (p) ->
+      p.position += 1 if _old > p.position >= _new
+      p.position -= 1 if _old < p.position <= _new
+
 
   _onReady: =>
     @$.$merge state: {status: 'idle'}, false
@@ -86,7 +88,8 @@ module.exports = class Printer extends EventEmitter
     # Adding new components
     data[k] ?= @_initComponent k, v for k, v of @config.components
     # Updating print qualities
-    data.printQualities = _.cloneDeep @config.printQualities
+    data.printQualities = new PrintQualities _.cloneDeep @config.printQualities
+
     # Adding the extruders to the axes
     @_axes = ['x','y','z'].concat _.keys @extruders
 
@@ -121,9 +124,11 @@ module.exports = class Printer extends EventEmitter
   rm: (key) => @$.$apply (data) =>
     comp = data[key]
     throw "part/assembly does not exist" if ['part', 'assembly'].none comp?.type
-    for subcomponent in comp.components
+    for subcomponent in comp.components()
       subcomponent.beforeDelete()
       delete data[subcomponent.key] if data[subcomponent.key]?
+    # Reflowing positions so that there aren't any gaps where parts were deleted
+    part.position = i for part, i in @parts
 
   estop: => @$.$apply (data) =>
     @driver.reset()
@@ -188,7 +193,7 @@ module.exports = class Printer extends EventEmitter
   _beforePartAttrSet: (comp, k1, k2, v) =>
     if k2 == 'position' and @_isBadPartPosition comp, k1, k2, v
       throw "Invalid position."
-    if k2 == 'quality' and !(@config.printQualities.options.hasOwnProperty k2)
+    if k2 == 'quality' and !(_.contains @data.printQualities.options, v)
       throw "Invalid print quality"
     if k2 == 'quality' and comp.needsSlicing() == false
       throw "Cannot set slicing quality for gcode files"
@@ -205,7 +210,7 @@ module.exports = class Printer extends EventEmitter
   _heaterGCode: (key) -> switch key
     when 'b' then "M140"
     when 'e0' then "M104"
-    else "M104 P#{k[1..]}"
+    else "M104 P#{key[1..]}"
 
   _compGCode: (key, comp, diff) -> switch comp.type || key
     when "conveyor"
@@ -246,7 +251,8 @@ module.exports = class Printer extends EventEmitter
     if @currentPart.needsSlicing?
       @currentPart.status = @$.buffer.state.status = "slicing"
     # Loading the gcode
-    slicerOpts = @config.printQualities.options[@currentPart.quality]
+    slicerOpts = _.clone @config.printQualities.options[@currentPart.quality]
+    slicerOpts.configPath = "/etc/tegh/slicing_profiles" if slicerOpts?
     @currentPart.loadGCode slicerOpts, @_onReadyToPrint.fill(@currentPart)
 
   _onReadyToPrint: (part, err, gcode) => @$.$apply (data) =>

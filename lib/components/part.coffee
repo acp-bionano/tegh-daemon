@@ -16,7 +16,7 @@ module.exports = class Part extends EventEmitter
     #check path fail fast
     ext = path.extname(opts.filePath)
     whitelist = /\.(gcode|ngc|stl|obj)/i
-    throw new Exception "Bad file extension." if !ext.match(whitelist)?
+    throw new Error "Bad file extension." if !ext.match(whitelist)?
     # Setting up the non-enumerable properties
     for k in nonEnumerables
       Object.defineProperty @, k, writable: true, value: undefined
@@ -59,7 +59,7 @@ module.exports = class Part extends EventEmitter
   cancel: =>
     @_cancelled = new Date()
     if @_slicingEngine?
-      @_toggleSlicingEngineEvents 'off'
+      @_toggleSlicingEngineEvents 'removeListener'
       @_slicingEngine.cancel()
     @removeListener "load", @_cb if @_cb?
     @_slicingEngine = null
@@ -102,8 +102,6 @@ module.exports = class Part extends EventEmitter
     join.then _.partial @_onLoadAndLineCount, new Date()
 
   _onLoadAndLineCount: (timestamp, lineCountArgs, loadArgs) =>
-    # Deleting the gcode file now that it's loaded into memory
-    @_deleteGCodeFile()
     # Stopping if the part's slicing or printing was cancelled
     return if @_cancelledAfter timestamp
     # Parsing the loaded information and emitting the load event
@@ -111,6 +109,8 @@ module.exports = class Part extends EventEmitter
     err = undefined if err == null
 
     if lineCountArgs == null or err?
+      console.log lineCountArgs
+      console.log err
       return @emit "error", new Error "error loading gcode"
 
     @totalLines = parseInt(lineCountArgs[1].match(/\d+/)[0])
