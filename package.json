@@ -5,6 +5,7 @@
   , "main": "./bin/tegh-daemon"
   , "dependencies": {
       "coffee-script": "1.7.x"
+    , "nan": "*"
     , "express": "3.x"
     , "formidable": "*"
     , "sugar": "*"

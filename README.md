@@ -40,14 +40,23 @@ Install
 ### OSX / Non-Arch Linux Distros
 
 1. Install an up to date copy of nodejs and npm
-2. **Linux Only:** Install avahi and it's bonjour compatibility layer
+2. **Linux Only:** Install avahi
 3. Install openssl
-3. `git clone https://github.com/D1plo1d/tegh-daemon.git&& cd tegh-daemon; npm install`
-4. Install the self-signed ssl cert: `./script/install.sh`
-5. **Linux Only:** If you have systemd then you can set tegh-daemon to load on startup by running  `sudo cp tegh-daemon.service /etc/systemd/system/tegh-daemon.service && sudo systemctl enable tegh-daemon.service`
-6. For camera access install opencv
+3. Clone and npm install
+        git clone https://github.com/D1plo1d/tegh-daemon.git&& cd tegh-daemon&& npm install
+4. Run the tegh-daemon install script:
+        ./script/install.sh
+5. Add yourself to the teghadmin group:
 
-**Note:** Upstart and initd are not yet supported so if you do not have systemd (for example on Ubuntu or OSX) then you won't be able to daemonize tegh-daemon. Instead your going to need to run tegh-dameon in a terminal session or screen or something. Just run `./bin/tegh-daemon --exec` from the git repository to start the service (it will not fork).
+        sudo usermod -a -G teghadmin `whoami`
+6. Add a printer config file for your printer (work in progress!):
+  * Find out the serial number of your arduino
+  * `cp ./defaults/printer.yml /etc/tegh/3d_printers/by_serial/[ARDUINO_SERIAL_NUMBER].yml`
+  * uncomment the driver that matches your 3D printer type
+
+7. **Linux Only (work in progress!):** If you have systemd then you can set tegh-daemon to load on startup by running  `sudo cp tegh-daemon.service /etc/systemd/system/tegh-daemon.service && sudo systemctl enable tegh-daemon.service`
+
+**Note:** Upstart and initd are not yet supported so if you do not have systemd (for example on Ubuntu or OSX) then you won't be able to daemonize tegh-daemon. Instead your going to need to run tegh-dameon in a terminal session or screen or something. Just run `./bin/tegh-daemon` from the git repository to start the service (it will not fork).
 
 ## WebCam Setup
 
