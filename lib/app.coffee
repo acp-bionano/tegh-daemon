@@ -71,12 +71,12 @@ module.exports = class App
     # installing the slicing engines
     SlicingFactory.install v for k, v in config.printQualities.options
     # initializing the serial driver
-    driver = DriverFactory.build config
+    driver = DriverFactory.build config.driver
     # intializing the printer and server
     @_initPrinter driver, config
 
   addDryRunPrinter: ->
-    driver = DriverFactory.build driver: {fork: false, type: "null"}
+    driver = DriverFactory.build driver: {fork: true, type: "null"}
     port = serialNumber: "dev_null", comName: "dev/null"
     config = @_initConfig(port) # new Config port, name: "Dev Null Printer"
     @_initPrinter driver, config

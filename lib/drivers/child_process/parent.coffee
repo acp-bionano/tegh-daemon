@@ -26,6 +26,7 @@ module.exports = class ChildProcessDriverParent extends EventEmitter
 
   _onInit: =>
     @_child.on('message', @_onMessage)
+    console.log k for k,v of @_opts
     @_child.send(@_opts)
 
   _onMessage: (m) =>
