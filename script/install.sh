@@ -5,6 +5,7 @@ set -e
 
 # Warming up the sudo cache
 sudo -v
+echo "Installing Tegh Daemon..."
 
 # Groups
 
