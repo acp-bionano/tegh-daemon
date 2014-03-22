@@ -67,9 +67,21 @@ module.exports = class Config extends EventEmitter
     for k in @staticAttrs
       @[k] ?= obj[k]
       delete obj[k]
-    @$ = new SmartObject obj
+    # Defining the buffer as a non-enumarble property so that it's excluded
+    # from JSON
+    Object.defineProperty @, "$",
+      writable: true
+      configurable: true
+      value: new SmartObject obj
+    # Binding events
     @$.on k, _.bind(@emit, @, k) for k in ['add', 'rm', 'change']
-    Object.defineProperty @, k, get: _.partial @_get, k for k, v of @$.buffer
+    # Adding properties from the buffer as enumerable attributes so that they
+    # are included in JSON
+    for k, v of @$.buffer
+      Object.defineProperty @, k,
+        enumerable: true
+        configurable: true
+        get: _.partial @_get, k
 
   _reload: (obj = {}) ->
     @$.merge @_initProperties obj
