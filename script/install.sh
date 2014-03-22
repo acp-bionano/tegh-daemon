@@ -1,8 +1,8 @@
 #! /bin/sh
+set -e
 DIR=$(cd $(dirname "$0"); pwd)
 path="/etc/tegh"
 cert="$path/cert"
-set -e
 
 # Warming up the sudo cache
 sudo -v
