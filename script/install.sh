@@ -8,7 +8,14 @@ cert="$path/cert"
 sudo -v
 echo "Installing Tegh Daemon..."
 
+# Compiling C++
+# ==============================================================================
+echo "Compiling C++..."
+gcc -o ./bin/arduino_reset ./lib/arduino_reset.c
+echo "Done"
+
 # Groups
+# ==============================================================================
 echo "Adding teghadmin Group..."
 sudo groupadd teghadmin | sudo dseditgroup -q -r "Tegh Admin" -o create teghadmin
 echo "Done"
