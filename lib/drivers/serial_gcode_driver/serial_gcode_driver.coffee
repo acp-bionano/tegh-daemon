@@ -83,7 +83,10 @@ module.exports = class PrintDriver extends AbstractSerialDriver
         target = "e" + ( /\ P([0-9]+)/.exec(l)?[1] || '0')
       else
         target = "b"
-      data[target] = {target_temp: temp}
+      if temp > 0
+        data[target] = {target_temp: temp, enabled: true}
+      else
+        data[target] = {enabled: false}
     # Parsing the sent command for blocking operations
     if l.has /M109|M190|M116/
       target = "e0" if l.has 'M116'
