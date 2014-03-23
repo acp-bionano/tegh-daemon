@@ -87,9 +87,13 @@ module.exports = class Config extends EventEmitter
     # are included in JSON
     for k, v of @$.buffer
       Object.defineProperty @, k,
-        enumerable: true
+        enumerable: @_isEnumerable(k)
         configurable: true
         get: _.partial @_get, k
+
+  _isEnumerable: (k) ->
+    nonEnumerables = ["app", "server"]
+    _.contains(nonEnumerables, k) == false
 
   _reload: (obj = {}) ->
     @$.merge @_initProperties obj
