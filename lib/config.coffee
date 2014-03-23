@@ -39,6 +39,13 @@ module.exports = class Config extends EventEmitter
       params: {layer_height: 2, infill: 50}
 
   constructor: (@port, arg) ->
+    # Making sure all non-config attributes non-enumerable
+    for k,v of @
+      Object.defineProperty @, k,
+        writable: true
+        configurable: true
+        value: v
+    # initializing the configuration
     if typeof arg == 'string'
       @filePath = arg
       @_initFromFile()

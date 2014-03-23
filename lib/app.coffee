@@ -71,7 +71,7 @@ module.exports = class App
     # installing the slicing engines
     SlicingFactory.install v for k, v in config.printQualities.options
     # initializing the serial driver
-    driver = DriverFactory.build config.$.buffer
+    driver = DriverFactory.build config
     # intializing the printer and server
     @_initPrinter driver, config
 
