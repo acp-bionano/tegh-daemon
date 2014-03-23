@@ -17,14 +17,16 @@ module.exports = class Printer extends EventEmitter
       targetTemp: 0
       currentTemp: 0
       targetTempCountdown: 0
-      flowrate: 40 / 60
+      flowrate: Math.round(40 / 60 * 100) / 100
       blocking: false
     conveyor: { type: 'conveyor', enabled: false, speed: 255 }
     fan: { type: 'fan', enabled: false, speed: 255 }
   _baseComponents: ->
     state: { status: 'initializing' }
     motors: { enabled: true }
-    axes: { xyFeedrate: 3000 / 60, zFeedrate: 300 / 60 }
+    axes:
+      xyFeedrate: Math.round(3000 / 60)
+      zFeedrate: Math.round(300 / 60)
 
   constructor: (@driver, @config, @_Part=Part) ->
     # Adding getters

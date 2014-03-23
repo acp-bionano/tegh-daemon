@@ -76,7 +76,7 @@ module.exports = class App
     @_initPrinter driver, config
 
   addDryRunPrinter: ->
-    driver = DriverFactory.build driver: {fork: false, type: "null"}
+    driver = DriverFactory.build driver: {fork: true, type: "null"}
     port = serialNumber: "dev_null", comName: "dev/null"
     config = @_initConfig(port) # new Config port, name: "Dev Null Printer"
     @_initPrinter driver, config

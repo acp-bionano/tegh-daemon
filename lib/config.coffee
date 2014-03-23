@@ -40,7 +40,22 @@ module.exports = class Config extends EventEmitter
       profile: "default"
       params: {layer_height: 2, infill: 50}
 
-  constructor: (@port, arg) ->
+  # Non-enumerable properties
+  app: null
+  server: null
+  printer: null
+  _events: {}
+
+  constructor: (port, arg) ->
+    # Making sure all non-config attributes non-enumerable
+    for k,v of @
+      delete @[k]
+      Object.defineProperty @, k,
+        writable: true
+        configurable: true
+        value: v
+    @port = port
+    # initializing the configuration
     if typeof arg == 'string'
       @filePath = arg
       @_initFromFile()
@@ -69,9 +84,21 @@ module.exports = class Config extends EventEmitter
     for k in @staticAttrs
       @[k] ?= obj[k]
       delete obj[k]
-    @$ = new SmartObject obj
+    # Defining the buffer as a non-enumarble property so that it's excluded
+    # from JSON
+    Object.defineProperty @, "$",
+      writable: true
+      configurable: true
+      value: new SmartObject obj
+    # Binding events
     @$.on k, _.bind(@emit, @, k) for k in ['add', 'rm', 'change']
-    Object.defineProperty @, k, get: _.partial @_get, k for k, v of @$.buffer
+    # Adding properties from the buffer as enumerable attributes so that they
+    # are included in JSON
+    for k, v of @$.buffer
+      Object.defineProperty @, k,
+        enumerable: true
+        configurable: true
+        get: _.partial @_get, k
 
   _reload: (obj = {}) ->
     @$.merge @_initProperties obj
@@ -83,8 +110,10 @@ module.exports = class Config extends EventEmitter
   _onFileReady: =>
     return if @_watcher?
     # initializing the config file watching and reloading
-    @_watcher = fs.watch(@filePath, persistent: false)
-    .on "change", @_onFileChange
+    Object.defineProperty @, "_watcher",
+      configurable: true
+      value: fs.watch(@filePath, persistent: false)
+    @_watcher.on "change", @_onFileChange
 
   _onFileChange: =>
     @_initFromFile()

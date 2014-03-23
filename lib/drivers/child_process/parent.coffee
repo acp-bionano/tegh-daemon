@@ -10,11 +10,11 @@ module.exports = class ChildProcessDriverParent extends EventEmitter
     'print',
     'isPrinting',
     'isClearToSend',
-    'startPolling',
-    'print_job_line_sent'
+    'startPolling'
   ]
 
   constructor: (@_opts) ->
+    # console.log "constructor"
     @_child = cp.fork('./lib/drivers/child_process/child.js')
 
     @_child
@@ -26,6 +26,7 @@ module.exports = class ChildProcessDriverParent extends EventEmitter
 
   _onInit: =>
     @_child.on('message', @_onMessage)
+    # console.log k for k,v of @_opts
     @_child.send(@_opts)
 
   _onMessage: (m) =>
