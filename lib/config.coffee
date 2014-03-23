@@ -102,7 +102,6 @@ module.exports = class Config extends EventEmitter
     return if @_watcher?
     # initializing the config file watching and reloading
     Object.defineProperty @, "_watcher",
-      enumerable: true
       configurable: true
       value: fs.watch(@filePath, persistent: false)
     @_watcher.on "change", @_onFileChange
