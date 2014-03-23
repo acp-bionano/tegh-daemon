@@ -15,6 +15,7 @@ module.exports = class ChildProcessDriverParent extends EventEmitter
   ]
 
   constructor: (@_opts) ->
+    # console.log "constructor"
     @_child = cp.fork('./lib/drivers/child_process/child.js')
 
     @_child
