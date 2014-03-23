@@ -41,6 +41,7 @@ module.exports = class Config extends EventEmitter
   constructor: (@port, arg) ->
     # Making sure all non-config attributes non-enumerable
     for k,v of @
+      delete @[k]
       Object.defineProperty @, k,
         writable: true
         configurable: true
@@ -100,8 +101,11 @@ module.exports = class Config extends EventEmitter
   _onFileReady: =>
     return if @_watcher?
     # initializing the config file watching and reloading
-    @_watcher = fs.watch(@filePath, persistent: false)
-    .on "change", @_onFileChange
+    Object.defineProperty @, "_watcher",
+      enumerable: true
+      configurable: true
+      value: fs.watch(@filePath, persistent: false)
+    @_watcher.on "change", @_onFileChange
 
   _onFileChange: =>
     @_initFromFile()
