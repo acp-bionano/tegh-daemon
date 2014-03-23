@@ -44,7 +44,7 @@ module.exports = class Config extends EventEmitter
   printer: null
   _events: {}
 
-  constructor: (@port, arg) ->
+  constructor: (port, arg) ->
     # Making sure all non-config attributes non-enumerable
     for k,v of @
       delete @[k]
@@ -52,6 +52,7 @@ module.exports = class Config extends EventEmitter
         writable: true
         configurable: true
         value: v
+    @port = port
     # initializing the configuration
     if typeof arg == 'string'
       @filePath = arg
