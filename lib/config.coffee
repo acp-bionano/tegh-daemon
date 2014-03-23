@@ -41,6 +41,8 @@ module.exports = class Config extends EventEmitter
   # Non-enumerable properties
   app: null
   server: null
+  printer: null
+  _events: {}
 
   constructor: (@port, arg) ->
     # Making sure all non-config attributes non-enumerable
