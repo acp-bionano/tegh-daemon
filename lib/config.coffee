@@ -38,6 +38,10 @@ module.exports = class Config extends EventEmitter
       profile: "default"
       params: {layer_height: 2, infill: 50}
 
+  # Non-enumerable properties
+  app: null
+  server: null
+
   constructor: (@port, arg) ->
     # Making sure all non-config attributes non-enumerable
     for k,v of @
@@ -87,13 +91,9 @@ module.exports = class Config extends EventEmitter
     # are included in JSON
     for k, v of @$.buffer
       Object.defineProperty @, k,
-        enumerable: @_isEnumerable(k)
+        enumerable: true
         configurable: true
         get: _.partial @_get, k
-
-  _isEnumerable: (k) ->
-    nonEnumerables = ["app", "server"]
-    _.contains(nonEnumerables, k) == false
 
   _reload: (obj = {}) ->
     @$.merge @_initProperties obj
